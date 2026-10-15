@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<!-- =====================================================================
+     TERRALIVE — MULTI-NODE GLOBAL DATA VISUALIZATION HUB
+     Page   : weather.html  (Node 02 — Atmospheric)
+     Stack  : HTML5 + CSS3 + Vanilla JS (no Leaflet needed on this page)
+     Data   : Open-Meteo (free, no API key) — current weather + air quality
+              for the hardcoded city: Manama, Bahrain (26.2285 N, 50.5860 E)
+     Note   : <body data-page="atmospheric"> tells script.js which module to run.
+===================================================================== -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Live weather and air quality for Manama, Bahrain, powered by the Open-Meteo API." />
+  <title>TerraLive — Atmospheric Node</title>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%2322d3ee' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%2322d3ee'/%3E%3C/svg%3E" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body data-page="atmospheric">
+
+  <header class="site-header">
+    <nav class="navbar container" aria-label="Main navigation">
+      <a class="brand" href="index.html">
+        <span class="brand-mark" aria-hidden="true"></span>
+        TERRA<span class="brand-accent">LIVE</span>
+      </a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-menu" id="nav-menu">
+        <li><a href="index.html"        class="nav-link">Home</a></li>
+        <li><a href="earthquakes.html" class="nav-link">Seismic</a></li>
+        <li><a href="weather.html"     class="nav-link active" aria-current="page">Atmospheric</a></li>
+        <li><a href="iss.html"         class="nav-link">Orbital</a></li>
+        <li><a href="about.html"       class="nav-link">About</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container page-enter">
+
+    <noscript>
+      <p class="noscript-banner">TerraLive streams live data with JavaScript — please enable it to use this dashboard.</p>
+    </noscript>
+
+    <!-- ============ PAGE HEADER ============ -->
+    <section class="page-header">
+      <div class="page-header-top">
+        <div>
+          <p class="eyebrow">// NODE 02 — ATMOSPHERIC UPLINK</p>
+          <h1 class="page-title">Atmospheric Monitor</h1>
+          <p class="page-sub">
+            Live weather conditions and air quality for <strong>Manama, Bahrain</strong>
+            (26.2285° N, 50.5860° E) — pulled from the free, keyless Open-Meteo API at
+            the moment the page loads.
+          </p>
+        </div>
+        <div class="page-header-side">
+          <span class="status-pill syncing" id="wx-status"><span class="dot"></span><span class="status-text">SYNCING</span></span>
+          <button class="btn btn-ghost btn-small" id="wx-refresh">Resync</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Error banner — hidden until script.js detects a failed request -->
+    <div class="node-alert" id="wx-alert" hidden>
+      <strong>UPLINK FAILED</strong> — could not reach the Open-Meteo API. Check your
+      connection and press <em>Resync</em> to retry.
+    </div>
+
+    <!-- ============ CURRENT CONDITIONS + AIR QUALITY ============ -->
+    <section class="weather-grid" aria-label="Current weather and air quality">
+
+      <!-- LEFT: current conditions -->
+      <div class="panel">
+        <div class="panel-head">
+          <span>CURRENT CONDITIONS</span>
+          <span class="mono dim" id="obs-time">—</span>
+        </div>
+
+        <div class="current-main">
+          <div class="current-icon" id="wx-icon" role="img" aria-label="Current weather symbol">…</div>
+          <div>
+            <div class="current-temp"><span id="wx-temp">—</span><span class="temp-unit">°C</span></div>
+            <div class="current-desc" id="wx-desc">awaiting uplink…</div>
+            <div class="current-feels mono" id="wx-feels">—</div>
+          </div>
+        </div>
+
+        <!-- 8 detail cells filled in by script.js -->
+        <div class="detail-grid">
+          <div class="stat-cell"><div class="stat-label">Humidity</div><div class="stat-value" id="wx-humidity">—</div></div>
+          <div class="stat-cell"><div class="stat-label">Wind</div><div class="stat-value" id="wx-wind">—</div></div>
+          <div class="stat-cell"><div class="stat-label">Gusts</div><div class="stat-value" id="wx-gust">—</div></div>
+          <div class="stat-cell"><div class="stat-label">Pressure</div><div class="stat-value" id="wx-pressure">—</div></div>
+          <div class="stat-cell"><div class="stat-label">Cloud Cover</div><div class="stat-value" id="wx-cloud">—</div></div>
+          <div class="stat-cell"><div class="stat-label">Precipitation</div><div class="stat-value" id="wx-precip">—</div></div>
+          <div class="stat-cell"><div class="stat-label">UV Index</div><div class="stat-value" id="wx-uv">—</div></div>
+          <div class="stat-cell"><div class="stat-label">Solar Status</div><div class="stat-value" id="wx-day">—</div></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: air quality index -->
+      <div class="panel">
+        <div class="panel-head">
+          <span>AIR QUALITY INDEX</span>
+          <span class="mono dim">US AQI · Open-Meteo</span>
+        </div>
+
+        <div class="aqi-main">
+          <div class="aqi-value" id="aqi-value">—</div>
+          <div class="aqi-category" id="aqi-category">awaiting uplink…</div>
+          <p class="aqi-advice" id="aqi-advice">—</p>
+          <p class="aqi-eu mono dim">European AQI reading: <span id="aqi-eu">—</span></p>
+        </div>
+
+        <!-- Pollutant bars are generated by script.js from the API response -->
+        <div class="pollutants" id="pollutants"></div>
+      </div>
+
+    </section>
+
+    <!-- ============ 24 HOUR TEMPERATURE CHART ============ -->
+    <section class="panel chart-panel" aria-label="24 hour temperature forecast">
+      <div class="panel-head">
+        <span>HOURLY FORECAST — NEXT 24 H</span>
+        <span class="mono dim">TEMPERATURE °C · hover a bar</span>
+      </div>
+      <!-- The bars are plain <div>s whose heights are set by script.js (no chart library!) -->
+      <div class="temp-chart" id="temp-chart">
+        <p class="loading-text">ESTABLISHING UPLINK…</p>
+      </div>
+    </section>
+
+    <p class="map-note">
+      Last sync: <span class="mono" id="wx-updated">—</span> · Open-Meteo free tier
+      requires no API key — perfect for teaching <span class="mono">fetch()</span>.
+    </p>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p class="footer-title">TERRALIVE — MULTI-NODE GLOBAL DATA VISUALIZATION HUB</p>
+      <p class="footer-meta">
+        University web development project · Data: USGS · Open-Meteo · WhereTheISS.at ·
+        Maps: Leaflet / OpenStreetMap / CARTO
+      </p>
+    </div>
+  </footer>
+
+  <!-- No Leaflet on this page — just the shared script -->
+  <script src="script.js"></script>
+</body>
+</html>
