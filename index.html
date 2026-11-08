@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<!-- =========================================================
+     TerraLive — index.html  (Home)
+
+     The landing page. It shows a clock and three live
+     summaries, each fetched from a public API by home.js.
+     ========================================================= -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TerraLive — earthquakes, weather and the International Space Station, live in your browser with plain HTML, CSS and JavaScript." />
+  <meta name="theme-color" content="#0C0E12" />
+  <title>TerraLive — live planetary data</title>
+
+  <!-- The little circle in the browser tab. -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%23E9B44C' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23E9B44C'/%3E%3C/svg%3E" />
+
+  <!-- Type. If the fonts can't load, the browser falls back
+       to the system font — the layout still holds. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <header class="site-header">
+    <nav class="navbar container" aria-label="Main navigation">
+      <a class="brand" href="index.html">Terra<span>Live</span></a>
+
+      <button class="nav-toggle" id="nav-toggle" aria-label="Open menu"
+              aria-expanded="false" aria-controls="nav-links">
+        <span></span><span></span><span></span>
+      </button>
+
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html" class="active" aria-current="page">Home</a></li>
+        <li><a href="earthquakes.html">Seismic</a></li>
+        <li><a href="weather.html">Weather</a></li>
+        <li><a href="iss.html">Orbital</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <noscript>
+      <p class="noscript">This dashboard loads its data with JavaScript. Please switch JavaScript on to use it.</p>
+    </noscript>
+
+    <!-- ============ HERO ============ -->
+    <section class="hero">
+      <p class="eyebrow">Live planetary data · no frameworks · no API keys</p>
+      <h1 class="hero-title">The planet, <span>live.</span></h1>
+      <p class="hero-text">
+        Earthquakes as they are recorded, weather and air quality for cities
+        around the world, and the space station overhead — streamed into this
+        page from three public APIs by plain HTML, CSS and JavaScript.
+      </p>
+
+      <!-- A clock running in two time zones, updated once a second -->
+      <div class="clock" aria-label="Current time">
+        <span class="clock-label">UTC</span>
+        <span class="clock-value" id="clock-utc">--:--:--</span>
+        <span class="clock-label">Local</span>
+        <span class="clock-value local" id="clock-local">--:--:--</span>
+        <span class="clock-date" id="clock-date">—</span>
+      </div>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="earthquakes.html">Open the seismic map</a>
+        <a class="btn" href="about.html">How it is built</a>
+      </div>
+    </section>
+
+    <!-- ============ THE THREE LIVE FEEDS ============ -->
+    <h2 class="section-label"><span class="num">01</span> Live feeds</h2>
+
+    <section class="feed-grid" aria-label="Live feeds">
+
+      <!-- 1. Earthquakes (live summary of the M2.5+ feed) -->
+      <a class="feed-card" href="earthquakes.html">
+        <div class="feed-top">
+          <span class="feed-no">01 · Seismic</span>
+          <span class="pill is-loading" id="pill-quakes">loading</span>
+        </div>
+        <h3 class="feed-title">Where the ground moved</h3>
+        <div class="feed-row">
+          <span class="feed-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="4" opacity="0.55" />
+              <circle cx="12" cy="12" r="1.4" fill="currentColor" />
+            </svg>
+          </span>
+          <div>
+            <div class="feed-value" id="home-quakes">—</div>
+            <div class="feed-note" id="home-quakes-note">fetching the USGS feed…</div>
+          </div>
+        </div>
+      </a>
+
+      <!-- 2. Weather (Manama, the city at the top of cities.js) -->
+      <a class="feed-card" href="weather.html">
+        <div class="feed-top">
+          <span class="feed-no">02 · Atmospheric</span>
+          <span class="pill is-loading" id="pill-weather">loading</span>
+        </div>
+        <h3 class="feed-title">Weather &amp; air quality</h3>
+        <div class="feed-row">
+          <span class="feed-icon" id="home-weather-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="4.5" />
+            </svg>
+          </span>
+          <div>
+            <div class="feed-value" id="home-weather">—</div>
+            <div class="feed-note" id="home-weather-note">fetching Open-Meteo…</div>
+          </div>
+        </div>
+      </a>
+
+      <!-- 3. The space station -->
+      <a class="feed-card" href="iss.html">
+        <div class="feed-top">
+          <span class="feed-no">03 · Orbital</span>
+          <span class="pill is-loading" id="pill-iss">loading</span>
+        </div>
+        <h3 class="feed-title">The ISS, overhead</h3>
+        <div class="feed-row">
+          <span class="feed-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <ellipse cx="12" cy="12" rx="9.5" ry="5" transform="rotate(-20 12 12)" />
+              <circle cx="12" cy="12" r="3" /><circle cx="18" cy="7" r="1.2" fill="currentColor" />
+            </svg>
+          </span>
+          <div>
+            <div class="feed-value" id="home-iss">—</div>
+            <div class="feed-note" id="home-iss-note">acquiring a fix…</div>
+          </div>
+        </div>
+      </a>
+    </section>
+
+    <!-- The strongest earthquake of the day, filled in by home.js -->
+    <aside class="callout" id="home-callout" hidden>
+      <span class="callout-mag" id="callout-mag">M —</span>
+      <span class="callout-body">
+        <b class="callout-place" id="callout-place">—</b>
+        <span class="callout-meta" id="callout-meta">strongest event in the last 24 hours</span>
+      </span>
+      <a class="btn btn-small" href="earthquakes.html">See it on the map</a>
+    </aside>
+
+    <!-- ============ HOW IT WORKS ============ -->
+    <h2 class="section-label"><span class="num">02</span> How a live page works</h2>
+
+    <section class="steps">
+      <div class="step">
+        <p class="step-num">STEP 1</p>
+        <h3>Ask for the data</h3>
+        <p>One line of JavaScript — <code>fetch(url)</code> — downloads the newest
+           numbers from the API. No server of our own is involved.</p>
+      </div>
+      <div class="step">
+        <p class="step-num">STEP 2</p>
+        <h3>Read the JSON</h3>
+        <p>The reply arrives as JSON: a plain text description of objects and
+           lists. <code>response.json()</code> turns it into JavaScript values.</p>
+      </div>
+      <div class="step">
+        <p class="step-num">STEP 3</p>
+        <h3>Write it on the page</h3>
+        <p>The values are put into elements that already exist in the HTML, so
+           the browser only repaints the text that changed.</p>
+      </div>
+    </section>
+
+    <a class="text-link" href="about.html">Read how each page is put together →</a>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <p class="footer-title">Terra<span>Live</span></p>
+          <p class="footer-blurb">
+            A small live dashboard built from the web's own building blocks —
+            hand-written HTML, CSS and JavaScript. No frameworks, no build
+            step, no API keys.
+          </p>
+        </div>
+        <div>
+          <p class="footer-heading">Data</p>
+          <ul class="footer-list">
+            <li>USGS — earthquakes</li>
+            <li>Open-Meteo — weather &amp; air</li>
+            <li>WhereTheISS.at — orbit</li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-heading">Built with</p>
+          <ul class="footer-list">
+            <li>HTML · CSS · JavaScript</li>
+            <li>Leaflet 1.9.4 — the only library</li>
+            <li>One dark theme</li>
+          </ul>
+        </div>
+      </div>
+      <p class="footer-bottom">
+        Everything on this page is fetched in your browser and nothing is
+        stored. Imagery © Google.
+      </p>
+    </div>
+  </footer>
+
+  <!-- cities.js holds the city list (only the weather page really
+       needs it, but the home card shows Manama from it too). -->
+  <script src="cities.js"></script>
+  <script src="common.js"></script>
+  <script src="home.js"></script>
+</body>
+</html>

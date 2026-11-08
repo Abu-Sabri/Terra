@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<!-- =========================================================
+     TerraLive — earthquakes.html  (Seismic)
+
+     Every earthquake the USGS recorded in the last 24 hours,
+     drawn on a Leaflet map by seismic.js.
+     ========================================================= -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Every earthquake recorded by the USGS in the past 24 hours, live on an interactive map." />
+  <meta name="theme-color" content="#0C0E12" />
+  <title>TerraLive — Seismic</title>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%23E9B44C' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23E9B44C'/%3E%3C/svg%3E" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet's own stylesheet, then ours (ours comes last so it wins). -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <header class="site-header">
+    <nav class="navbar container" aria-label="Main navigation">
+      <a class="brand" href="index.html">Terra<span>Live</span></a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Open menu"
+              aria-expanded="false" aria-controls="nav-links">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="earthquakes.html" class="active" aria-current="page">Seismic</a></li>
+        <li><a href="weather.html">Weather</a></li>
+        <li><a href="iss.html">Orbital</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <noscript>
+      <p class="noscript">This dashboard loads its data with JavaScript. Please switch JavaScript on to use it.</p>
+    </noscript>
+
+    <!-- ============ PAGE HEADER ============ -->
+    <section class="page-head">
+      <div>
+        <p class="eyebrow">01 · Seismic · USGS feed</p>
+        <h1 class="page-title">Where the ground moved</h1>
+        <p class="page-sub">
+          Every earthquake the USGS recorded in the past 24 hours. Each circle is
+          one event and its size follows the magnitude — click a circle for the
+          details, or click a row in the log to fly the map to it.
+        </p>
+      </div>
+      <div class="page-actions">
+        <span class="pill is-loading" id="quake-pill">loading</span>
+        <button class="btn btn-small" id="refresh-button">Refresh</button>
+      </div>
+    </section>
+
+    <!-- ============ THE FOUR KEY NUMBERS ============ -->
+    <section class="stat-grid" aria-label="Summary">
+      <div class="stat-cell">
+        <div class="stat-label">Events / 24 h</div>
+        <div class="stat-value" id="stat-total">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Strongest</div>
+        <div class="stat-value" id="stat-strongest">—</div>
+        <div class="stat-sub" id="stat-strongest-place">waiting for data…</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Most recent</div>
+        <div class="stat-value" id="stat-recent">—</div>
+        <div class="stat-sub">time since the latest event</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Source</div>
+        <div class="stat-value small">USGS</div>
+        <div class="stat-sub">all_day.geojson · refresh 5 min</div>
+      </div>
+    </section>
+
+    <!-- ============ MAP + EVENT LOG ============ -->
+    <section class="split" aria-label="Map and event log">
+
+      <div class="map" id="quake-map" role="application" aria-label="Interactive earthquake map"></div>
+
+      <aside class="log-panel" aria-label="Earthquake log">
+        <div class="log-head">
+          <h2>Event log</h2>
+
+          <!-- data-min-mag is read by seismic.js.
+               -99 means "everything", because the USGS also reports
+               micro-quakes with negative magnitudes. -->
+          <div class="chips" id="magnitude-filters" role="group" aria-label="Filter by magnitude">
+            <button class="chip active" data-min-mag="-99">ALL</button>
+            <button class="chip" data-min-mag="2.5">M2.5+</button>
+            <button class="chip" data-min-mag="4.5">M4.5+</button>
+            <button class="chip" data-min-mag="5">M5+</button>
+          </div>
+
+          <div class="chips" id="sort-filters" role="group" aria-label="Sort the log" style="margin-top:8px">
+            <button class="chip active" data-sort="newest">Newest</button>
+            <button class="chip" data-sort="strongest">Strongest</button>
+          </div>
+        </div>
+
+        <ul class="log-list" id="quake-list">
+          <li class="log-foot">Loading the feed…</li>
+        </ul>
+
+        <div class="log-foot" id="quake-count">—</div>
+      </aside>
+    </section>
+
+    <p class="note">
+      <span style="color:#7FB3D5">●</span> under M2.5 &nbsp;
+      <span style="color:#E9B44C">●</span> M2.5–4.5 &nbsp;
+      <span style="color:#E58E52">●</span> M4.5–6 &nbsp;
+      <span style="color:#E2795F">●</span> M6 and above &nbsp;·&nbsp;
+      Last fetched: <span class="mono" id="quake-updated">—</span>
+    </p>
+
+    <!-- ============ EVENTS PER HOUR ============ -->
+    <h2 class="section-label"><span class="num">02</span> When they happened</h2>
+
+    <section class="panel" aria-label="Earthquakes per hour">
+      <div class="panel-head">
+        <span>Events per hour · last 24 hours (UTC)</span>
+        <span class="mono dim" id="chart-total">—</span>
+      </div>
+      <div class="hour-chart" id="hour-chart"></div>
+      <div class="hour-axis">
+        <span>24 h ago</span>
+        <span>18 h</span>
+        <span>12 h</span>
+        <span>6 h</span>
+        <span>now</span>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <p class="footer-title">Terra<span>Live</span></p>
+          <p class="footer-blurb">
+            A small live dashboard built from the web's own building blocks —
+            hand-written HTML, CSS and JavaScript. No frameworks, no build
+            step, no API keys.
+          </p>
+        </div>
+        <div>
+          <p class="footer-heading">Data</p>
+          <ul class="footer-list">
+            <li>USGS — earthquakes</li>
+            <li>Open-Meteo — weather &amp; air</li>
+            <li>WhereTheISS.at — orbit</li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-heading">Built with</p>
+          <ul class="footer-list">
+            <li>HTML · CSS · JavaScript</li>
+            <li>Leaflet 1.9.4 — the only library</li>
+            <li>One dark theme</li>
+          </ul>
+        </div>
+      </div>
+      <p class="footer-bottom">
+        Everything on this page is fetched in your browser and nothing is
+        stored. Imagery © Google.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Leaflet first, because common.js uses it to build the map. -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="common.js"></script>
+  <script src="seismic.js"></script>
+</body>
+</html>

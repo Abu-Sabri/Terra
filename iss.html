@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<!-- =========================================================
+     TerraLive — iss.html  (Orbital)
+
+     The International Space Station, tracked live. A new
+     position arrives every 5 seconds from
+     "Where the ISS at?" and iss.js moves the marker.
+     ========================================================= -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="The International Space Station tracked live — position, altitude, speed and ground trail, refreshed every five seconds." />
+  <meta name="theme-color" content="#0C0E12" />
+  <title>TerraLive — Orbital</title>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%23E9B44C' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23E9B44C'/%3E%3C/svg%3E" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <header class="site-header">
+    <nav class="navbar container" aria-label="Main navigation">
+      <a class="brand" href="index.html">Terra<span>Live</span></a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Open menu"
+              aria-expanded="false" aria-controls="nav-links">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="earthquakes.html">Seismic</a></li>
+        <li><a href="weather.html">Weather</a></li>
+        <li><a href="iss.html" class="active" aria-current="page">Orbital</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <noscript>
+      <p class="noscript">This dashboard loads its data with JavaScript. Please switch JavaScript on to use it.</p>
+    </noscript>
+
+    <!-- ============ PAGE HEADER ============ -->
+    <section class="page-head">
+      <div>
+        <p class="eyebrow">03 · Orbital · WhereTheISS.at feed</p>
+        <h1 class="page-title">The station, overhead</h1>
+        <p class="page-sub">
+          The International Space Station (satellite 25544) circles the Earth
+          roughly every 90 minutes at 28,000 km/h. A new position is fetched
+          every five seconds with <span class="mono">setInterval()</span> and the
+          trail is drawn behind it.
+        </p>
+      </div>
+      <div class="page-actions">
+        <span class="pill is-loading" id="iss-pill">acquiring</span>
+        <button class="btn btn-small" id="refresh-button">Refresh now</button>
+      </div>
+    </section>
+
+    <!-- ============ TELEMETRY ============ -->
+    <section class="stat-grid six" aria-label="ISS telemetry">
+      <div class="stat-cell">
+        <div class="stat-label">Latitude</div>
+        <div class="stat-value" id="iss-lat">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Longitude</div>
+        <div class="stat-value" id="iss-lon">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Altitude</div>
+        <div class="stat-value" id="iss-alt">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Speed</div>
+        <div class="stat-value" id="iss-speed">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Sunlight</div>
+        <div class="stat-value" id="iss-light">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Fixes</div>
+        <div class="stat-value" id="iss-fixes">0</div>
+      </div>
+    </section>
+
+    <!-- ============ THE MAP ============ -->
+    <div class="map tall" id="iss-map" role="application" aria-label="ISS tracking map"></div>
+
+    <p class="note">
+      The dashed circle is the area the station can see (its footprint, about
+      2,250 km in every direction). The orange line is the last 20 positions —
+      the ground track it has just flown over.
+    </p>
+
+    <!-- ============ CONTROLS ============ -->
+    <section class="controls" aria-label="Tracking controls">
+      <label class="toggle">
+        <input type="checkbox" id="follow" checked />
+        <span>Keep the map centred on the station</span>
+      </label>
+      <p class="mono dim" style="font-size:0.8rem">
+        Last fix: <span id="iss-updated">—</span> · poll interval 5 s · sat 25544
+      </p>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <p class="footer-title">Terra<span>Live</span></p>
+          <p class="footer-blurb">
+            A small live dashboard built from the web's own building blocks —
+            hand-written HTML, CSS and JavaScript. No frameworks, no build
+            step, no API keys.
+          </p>
+        </div>
+        <div>
+          <p class="footer-heading">Data</p>
+          <ul class="footer-list">
+            <li>USGS — earthquakes</li>
+            <li>Open-Meteo — weather &amp; air</li>
+            <li>WhereTheISS.at — orbit</li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-heading">Built with</p>
+          <ul class="footer-list">
+            <li>HTML · CSS · JavaScript</li>
+            <li>Leaflet 1.9.4 — the only library</li>
+            <li>One dark theme</li>
+          </ul>
+        </div>
+      </div>
+      <p class="footer-bottom">
+        Everything on this page is fetched in your browser and nothing is
+        stored. Imagery © Google.
+      </p>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="common.js"></script>
+  <script src="iss.js"></script>
+</body>
+</html>

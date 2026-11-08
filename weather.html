@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<!-- =========================================================
+     TerraLive — weather.html  (Atmospheric)
+
+     Current weather, air quality, a 24-hour temperature
+     chart and a seven-day outlook for one city.
+     Data: Open-Meteo (free, no key). Code: weather.js
+     ========================================================= -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Live weather, air quality, a 24-hour chart and a seven-day outlook for cities worldwide, powered by the Open-Meteo API." />
+  <meta name="theme-color" content="#0C0E12" />
+  <title>TerraLive — Weather &amp; air quality</title>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%23E9B44C' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23E9B44C'/%3E%3C/svg%3E" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <header class="site-header">
+    <nav class="navbar container" aria-label="Main navigation">
+      <a class="brand" href="index.html">Terra<span>Live</span></a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Open menu"
+              aria-expanded="false" aria-controls="nav-links">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="earthquakes.html">Seismic</a></li>
+        <li><a href="weather.html" class="active" aria-current="page">Weather</a></li>
+        <li><a href="iss.html">Orbital</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <noscript>
+      <p class="noscript">This dashboard loads its data with JavaScript. Please switch JavaScript on to use it.</p>
+    </noscript>
+
+    <!-- ============ PAGE HEADER ============ -->
+    <section class="page-head">
+      <div>
+        <p class="eyebrow">02 · Atmospheric · Open-Meteo feed</p>
+        <h1 class="page-title">Weather &amp; air quality</h1>
+        <p class="page-sub">
+          One live report at a time: the current conditions, the air-quality
+          index, the next 24 hours of temperature and a seven-day outlook.
+          Type a city in the box below to move the report.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ CITY PICKER ============ -->
+    <section class="toolbar" aria-label="City picker">
+      <div class="city-field">
+        <label for="city-search" class="stat-label" style="margin:0">City</label>
+
+        <!-- A normal search box plus a <datalist>: the browser shows the
+             matching city names as a drop-down, so no extra code is
+             needed for the menu itself. weather.js fills the list in. -->
+        <input type="search" id="city-search" list="city-options"
+               placeholder="Search cities…" autocomplete="off" spellcheck="false" />
+        <datalist id="city-options"></datalist>
+      </div>
+
+      <div class="toolbar-actions">
+        <span class="pill is-loading" id="weather-pill">loading</span>
+        <button class="btn btn-small" id="refresh-button">Refresh</button>
+      </div>
+    </section>
+
+    <div class="banner" id="weather-banner" hidden>
+      Could not reach Open-Meteo. Check the connection and press Refresh.
+    </div>
+
+    <!-- ============ CURRENT WEATHER + AIR QUALITY ============ -->
+    <section class="weather-grid" aria-label="Current weather and air quality">
+
+      <!-- LEFT: current conditions -->
+      <div class="panel">
+        <div class="panel-head">
+          <span>Current weather</span>
+          <span class="mono dim" id="observed-at">—</span>
+        </div>
+
+        <div class="current">
+          <div class="current-icon" id="weather-icon"></div>
+          <div>
+            <div class="current-temp"><span id="temperature">—</span><span>°C</span></div>
+            <div class="current-desc" id="sky">waiting for data…</div>
+            <div class="current-feels" id="feels-like">—</div>
+          </div>
+          <div class="current-place">
+            <b id="place">—</b>
+            <span id="place-note">—</span>
+          </div>
+        </div>
+
+        <div class="sun-strip" id="sun-strip">
+          <span>↑ sunrise <b id="sunrise">—</b></span>
+          <span>↓ sunset <b id="sunset">—</b></span>
+          <span>daylight <b id="daylight">—</b></span>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: air quality -->
+      <div class="panel">
+        <div class="panel-head">
+          <span>Air quality</span>
+          <span class="mono dim">US AQI</span>
+        </div>
+
+        <div class="aqi-main">
+          <div class="aqi-value" id="aqi">—</div>
+          <div class="aqi-category" id="aqi-category">waiting for data…</div>
+          <p class="aqi-advice" id="aqi-advice">—</p>
+        </div>
+
+        <!-- The official 0–500 scale with a marker on today's reading. -->
+        <div class="aqi-scale" id="aqi-scale" hidden>
+          <div class="aqi-marker" id="aqi-marker"></div>
+        </div>
+        <div class="aqi-scale-labels">
+          <span>0 good</span><span>100</span><span>200</span><span>300</span><span>500</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WHAT IS IN THE AIR ============ -->
+    <section class="panel" aria-label="Pollutants" style="margin-top:20px">
+      <div class="panel-head">
+        <span>What is in the air</span>
+        <span class="mono dim" style="text-transform:none">µg/m³ · each bar has its own scale</span>
+      </div>
+      <!-- The bars are written by weather.js -->
+      <div class="pollutants" id="pollutants"></div>
+    </section>
+
+    <!-- ============ THE EIGHT MEASUREMENTS ============ -->
+    <section class="stat-grid eight" aria-label="Measurements" style="margin-top:20px">
+      <div class="stat-cell">
+        <div class="stat-label">Humidity</div>
+        <div class="stat-value" id="humidity">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Wind</div>
+        <div class="stat-value" id="wind">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Gusts</div>
+        <div class="stat-value" id="gusts">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Direction</div>
+        <div class="stat-value" id="wind-direction">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Pressure</div>
+        <div class="stat-value" id="pressure">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Clouds</div>
+        <div class="stat-value" id="clouds">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">Rain</div>
+        <div class="stat-value" id="rain">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">UV index</div>
+        <div class="stat-value" id="uv">—</div>
+      </div>
+    </section>
+
+    <!-- ============ 24 HOUR TEMPERATURE CHART ============ -->
+    <h2 class="section-label"><span class="num">03</span> The next 24 hours</h2>
+
+    <section class="panel" aria-label="Hourly temperature">
+      <div class="panel-head">
+        <span>Temperature · °C</span>
+        <span class="mono dim">hover a bar for the exact reading</span>
+      </div>
+      <div class="temp-chart" id="temp-chart"></div>
+      <div class="temp-axis">
+        <span id="chart-low">low —</span>
+        <span id="chart-high">high —</span>
+      </div>
+    </section>
+
+    <!-- ============ SEVEN DAY OUTLOOK ============ -->
+    <h2 class="section-label"><span class="num">04</span> Seven-day outlook</h2>
+
+    <section class="panel" aria-label="Seven day outlook">
+      <div class="daily-strip" id="daily-strip">
+        <div class="day-card">Loading…</div>
+      </div>
+    </section>
+
+    <p class="note">
+      Last fetched: <span class="mono" id="weather-updated">—</span> ·
+      Open-Meteo's free tier needs no API key. Air quality is the US AQI
+      scale from the same provider.
+    </p>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <p class="footer-title">Terra<span>Live</span></p>
+          <p class="footer-blurb">
+            A small live dashboard built from the web's own building blocks —
+            hand-written HTML, CSS and JavaScript. No frameworks, no build
+            step, no API keys.
+          </p>
+        </div>
+        <div>
+          <p class="footer-heading">Data</p>
+          <ul class="footer-list">
+            <li>USGS — earthquakes</li>
+            <li>Open-Meteo — weather &amp; air</li>
+            <li>WhereTheISS.at — orbit</li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-heading">Built with</p>
+          <ul class="footer-list">
+            <li>HTML · CSS · JavaScript</li>
+            <li>Leaflet 1.9.4 — the only library</li>
+            <li>One dark theme</li>
+          </ul>
+        </div>
+      </div>
+      <p class="footer-bottom">
+        Everything on this page is fetched in your browser and nothing is
+        stored. Imagery © Google.
+      </p>
+    </div>
+  </footer>
+
+  <!-- cities.js must load before weather.js, which reads CITIES. -->
+  <script src="cities.js"></script>
+  <script src="common.js"></script>
+  <script src="weather.js"></script>
+</body>
+</html>

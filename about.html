@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<!-- =========================================================
+     TerraLive — about.html
+
+     The written part of the project: what each file does,
+     which APIs are used, how a live page works, and short
+     answers to the questions a tutor is likely to ask.
+     ========================================================= -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="How TerraLive is built: five pages, three public APIs, plain HTML, CSS and JavaScript." />
+  <meta name="theme-color" content="#0C0E12" />
+  <title>TerraLive — About the project</title>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%23E9B44C' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23E9B44C'/%3E%3C/svg%3E" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <header class="site-header">
+    <nav class="navbar container" aria-label="Main navigation">
+      <a class="brand" href="index.html">Terra<span>Live</span></a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Open menu"
+              aria-expanded="false" aria-controls="nav-links">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="earthquakes.html">Seismic</a></li>
+        <li><a href="weather.html">Weather</a></li>
+        <li><a href="iss.html">Orbital</a></li>
+        <li><a href="about.html" class="active" aria-current="page">About</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- ============ INTRO ============ -->
+    <section class="page-head">
+      <div>
+        <p class="eyebrow">04 · About</p>
+        <h1 class="page-title">How this was built</h1>
+        <p class="lede">
+          TerraLive is a small live dashboard. It has five pages, one
+          stylesheet, four short JavaScript files and no server of its own —
+          every number on screen is downloaded straight into the browser.
+        </p>
+      </div>
+    </section>
+
+    <p class="prose" style="margin-top:24px">
+      The aim was to show that "live data" does not need a big framework. A page
+      asks a public API for the newest numbers, receives them as JSON, and writes
+      them into elements that are already in the HTML. When the data is new, the
+      page simply repeats that cycle — once a second for the clock, every five
+      seconds for the space station, every five minutes for earthquakes.
+    </p>
+
+    <!-- ============ 01 · THE FILES ============ -->
+    <h2 class="section-label"><span class="num">01</span> The files</h2>
+
+    <section class="panel">
+      <table class="table">
+        <thead>
+          <tr><th>File</th><th>What it does</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>index.html<br />home.js</td>
+              <td>The landing page: a clock and three live summaries, one per API.</td></tr>
+          <tr><td>earthquakes.html<br />seismic.js</td>
+              <td>A Leaflet map of every earthquake in the last 24 hours, a filterable
+                  log and a count per hour.</td></tr>
+          <tr><td>weather.html<br />weather.js</td>
+              <td>Weather and air quality for one city, a 24-hour temperature chart and
+                  a seven-day outlook.</td></tr>
+          <tr><td>iss.html<br />iss.js</td>
+              <td>The space station's position, refreshed every five seconds, with its
+                  ground trail drawn on the map.</td></tr>
+          <tr><td>style.css</td>
+              <td>One stylesheet for all five pages. Every colour is a variable at
+                  the top, so the whole site can be re-coloured by editing a few lines.</td></tr>
+          <tr><td>common.js</td>
+              <td>Helpers shared by every page: <code>fetchJSON()</code>,
+                  <code>timeAgo()</code>, the weather icons and the map setup.</td></tr>
+          <tr><td>cities.js</td>
+              <td>A plain list of cities (name, latitude, longitude) for the weather
+                  picker. Adding a city is copy-and-paste.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ============ 02 · THE THREE APIS ============ -->
+    <h2 class="section-label"><span class="num">02</span> The three data sources</h2>
+
+    <section class="cards-3">
+      <div class="card">
+        <h3>USGS — earthquakes</h3>
+        <p class="mono">earthquake.usgs.gov</p>
+        <p>
+          A GeoJSON file containing every event of the last 24 hours. Each
+          feature has a magnitude, a place name, a time and coordinates with a
+          depth. Free, no key, updated every minute.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Open-Meteo — weather &amp; air</h3>
+        <p class="mono">api.open-meteo.com</p>
+        <p>
+          Two endpoints: one for temperature, wind, pressure, UV and sunrise,
+          one for the US air-quality index and pollutant levels. You send a
+          latitude and longitude, you get back the forecast.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Where the ISS at? — orbit</h3>
+        <p class="mono">api.wheretheiss.at</p>
+        <p>
+          One JSON object per request with the station's latitude, longitude,
+          altitude, speed and whether it is in sunlight. The page asks again
+          every five seconds.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ 03 · ONE DATA CYCLE ============ -->
+    <h2 class="section-label"><span class="num">03</span> One data cycle, in code</h2>
+
+    <section class="cards-2">
+      <div class="card">
+        <h3>Wait for the answer</h3>
+        <p style="margin-bottom:14px">
+          <code>async</code> tells JavaScript the function will wait for
+          something. <code>await</code> pauses only this function — the rest of
+          the page keeps running.
+        </p>
+<pre class="code-block"><span class="c">// common.js</span>
+<span class="k">async function</span> fetchJSON(url) {
+  <span class="k">const</span> response = <span class="k">await</span> fetch(url);
+  <span class="k">if</span> (!response.ok) <span class="k">throw new</span> Error("failed");
+  <span class="k">return</span> response.json();
+}</pre>
+      </div>
+
+      <div class="card">
+        <h3>Use the answer</h3>
+        <p style="margin-bottom:14px">
+          The station's numbers arrive as one object, so they are copied
+          straight into the elements that show them — no rebuilding of the page.
+        </p>
+<pre class="code-block"><span class="c">// iss.js</span>
+<span class="k">const</span> data = <span class="k">await</span> fetchJSON(API.iss);
+$("iss-lat").textContent =
+  formatLatLon(data.latitude, <span class="k">true</span>);
+$("iss-alt").textContent =
+  Math.round(data.altitude) + " km";</pre>
+      </div>
+    </section>
+
+    <p class="note">
+      <code>try / catch</code> wraps every request: if the API is unreachable the
+      page shows "offline" in the status pill instead of going blank.
+    </p>
+
+    <!-- ============ 04 · QUESTIONS ============ -->
+    <h2 class="section-label"><span class="num">04</span> Questions, answered</h2>
+
+    <section class="faq">
+      <details open>
+        <summary>Where does the data come from?</summary>
+        <p>
+          Three public APIs, all free and keyless: USGS for earthquakes,
+          Open-Meteo for weather and air quality, and WhereTheISS.at for the
+          station. The addresses are all listed at the top of
+          <code>common.js</code> in one object called <code>API</code>.
+        </p>
+      </details>
+      <details>
+        <summary>Why is there no backend?</summary>
+        <p>
+          Because these APIs send the header
+          <code>Access-Control-Allow-Origin</code>, which allows a browser to
+          call them directly. So the browser is the client <em>and</em> the
+          thing that draws the page — no PHP, Node or database is involved.
+        </p>
+      </details>
+      <details>
+        <summary>How does the page update itself?</summary>
+        <p>
+          Two timers. <code>setInterval(tick, 1000)</code> redraws the clock
+          once a second, and <code>setInterval(fetchISS, 5000)</code> asks for a
+          new position every five seconds. The earthquake feed is reloaded every
+          five minutes. Each tick replaces text, not the whole page — which is
+          why nothing flickers.
+        </p>
+      </details>
+      <details>
+        <summary>How are the earthquakes drawn on the map?</summary>
+        <p>
+          Leaflet is the only library used. For each event we create a
+          <code>L.circleMarker</code> at its coordinates. Its radius comes from
+          the magnitude and its colour from the same number, so the strongest
+          events are the biggest and brightest.
+        </p>
+      </details>
+      <details>
+        <summary>Why do the filter buttons not lose any data?</summary>
+        <p>
+          The full list is stored once in the <code>quakes</code> array.
+          Filtering uses <code>.filter()</code> and sorting uses
+          <code>.sort()</code>, both of which return a <em>new</em> array. The
+          original list is never touched, so pressing "ALL" brings everything
+          back instantly without another download.
+        </p>
+      </details>
+      <details>
+        <summary>What happens when the internet is down?</summary>
+        <p>
+          Every request sits inside <code>try / catch</code>. If it fails, the
+          status pill turns red and says "offline", the weather page shows a red
+          banner, and in the worst case the map area says that the map library has to come
+          from a CDN. Nothing white-screens.
+        </p>
+      </details>
+      <details>
+        <summary>How is the city list handled?</summary>
+        <p>
+          <code>cities.js</code> holds about 280 places as plain objects. The
+          search box is an <code>&lt;input list="city-options"&gt;</code>
+          connected to a <code>&lt;datalist&gt;</code>: the browser itself
+          provides the matching drop-down, so the JavaScript only has to find the
+          chosen name in the array and fetch that city's weather.
+        </p>
+      </details>
+      <details>
+        <summary>How long is the code?</summary>
+        <p>
+          Roughly 1,200 lines of CSS and 1,000 lines of JavaScript, comments
+          included. The longest single function is under 30 lines, and every
+          file starts with a note saying what it is for.
+        </p>
+      </details>
+    </section>
+
+    <!-- ============ 05 · LIMITS ============ -->
+    <h2 class="section-label"><span class="num">05</span> Limits of the project</h2>
+
+    <section class="cards-2">
+      <div class="card">
+        <h3>It needs a connection</h3>
+        <p>
+          Open the folder with a double-click and the layout still works, but
+          the numbers need the APIs and the map needs the Leaflet files from a
+          CDN. Serving the folder over HTTP (or putting it online) is the
+          smoothest way to show it.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Earthquakes are not instant</h3>
+        <p>
+          The USGS feed is a summary that updates about once a minute, so a very
+          fresh event can take a moment to appear. That is the data source, not
+          the page.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Air quality is a model</h3>
+        <p>
+          Open-Meteo's air-quality figures are modelled from monitoring stations,
+          not measured at your street. The category labels follow the official US
+          AQI bands.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Nothing is stored</h3>
+        <p>
+          There is no database and no <code>localStorage</code>: reload the page
+          and it asks the APIs again. That keeps the project easy to reason about
+          — the page is a view of the data, nothing more.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ CREDITS ============ -->
+    <h2 class="section-label"><span class="num">06</span> Credits</h2>
+
+    <p class="prose">
+      Earthquake data: USGS Earthquake Hazards Program · Weather and air quality:
+      Open-Meteo · ISS telemetry: Where the ISS at? · Maps: Leaflet with Google
+      hybrid satellite tiles · Type: Inter and
+      JetBrains Mono · Icons: drawn as inline SVG in this project.
+    </p>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <p class="footer-title">Terra<span>Live</span></p>
+          <p class="footer-blurb">
+            A small live dashboard built from the web's own building blocks —
+            hand-written HTML, CSS and JavaScript. No frameworks, no build
+            step, no API keys.
+          </p>
+        </div>
+        <div>
+          <p class="footer-heading">Data</p>
+          <ul class="footer-list">
+            <li>USGS — earthquakes</li>
+            <li>Open-Meteo — weather &amp; air</li>
+            <li>WhereTheISS.at — orbit</li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-heading">Built with</p>
+          <ul class="footer-list">
+            <li>HTML · CSS · JavaScript</li>
+            <li>Leaflet 1.9.4 — the only library</li>
+            <li>One dark theme</li>
+          </ul>
+        </div>
+      </div>
+      <p class="footer-bottom">
+        Everything on this page is fetched in your browser and nothing is
+        stored. Imagery © Google.
+      </p>
+    </div>
+  </footer>
+
+  <script src="common.js"></script>
+</body>
+</html>

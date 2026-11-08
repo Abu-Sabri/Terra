@@ -1,0 +1,1208 @@
+/* =========================================================
+   TerraLive — style.css
+   ONE stylesheet, ONE theme (dark), shared by all five pages.
+
+   CONTENTS
+   1.  Colours & fonts          (the design tokens)
+   2.  Reset & page basics
+   3.  Header & navigation
+   4.  Reusable pieces          (buttons, cards, stats, labels)
+   5.  Home page
+   6.  Seismic page
+   7.  Weather page
+   8.  Orbital page
+   9.  About page
+   10. Leaflet map overrides
+   11. Small screens
+   ========================================================= */
+
+
+/* ---------- 1. COLOURS & FONTS --------------------------- */
+/* Every colour lives here. Change a value once and it
+   changes everywhere it is used. */
+:root {
+  --bg:        #0C0E12;   /* page background            */
+  --panel:     #14171D;   /* cards and panels           */
+  --panel-2:   #1A1E26;   /* inputs, wells, hover states */
+  --line:      #262B34;   /* borders                    */
+  --text:      #E8E6E1;   /* headings and values        */
+  --text-mid:  #B4B9C2;   /* body copy                  */
+  --text-dim:  #8A909B;   /* labels and captions        */
+
+  --accent:      #E9B44C;              /* the one accent colour */
+  --accent-soft: rgba(233, 180, 76, 0.12);
+
+  --ok:    #66C08B;
+  --warn:  #E6C055;
+  --bad:   #E2795F;
+  --rain:  #7FB3D5;
+  --snow:  #CFE0EE;
+
+  --radius:    10px;
+  --radius-sm: 6px;
+  --max-width: 1120px;
+
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+
+/* ---------- 2. RESET & PAGE BASICS ---------------------- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text-mid);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* A soft amber glow behind the top of every page. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 420px;
+  background: radial-gradient(60% 100% at 50% 0%, rgba(233, 180, 76, 0.07), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+h1, h2, h3, h4 { color: var(--text); font-weight: 600; line-height: 1.2; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: #f3c874; }
+
+img, svg { display: block; max-width: 100%; }
+
+code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.mono { font-family: var(--mono); }
+
+/* The hidden attribute must beat any display rule below. */
+[hidden] { display: none !important; }
+.dim  { color: var(--text-dim); }
+.nowrap { white-space: nowrap; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* The centred column every page sits in. */
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+main { position: relative; z-index: 1; padding-bottom: 80px; }
+
+/* Focus ring for keyboard users. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Banner shown if JavaScript is switched off. */
+.noscript {
+  margin: 24px 0;
+  padding: 14px 18px;
+  border: 1px solid var(--bad);
+  border-radius: var(--radius-sm);
+  background: rgba(226, 121, 95, 0.1);
+  color: var(--text);
+}
+
+
+/* ---------- 3. HEADER & NAVIGATION ---------------------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 500;
+  background: rgba(12, 14, 18, 0.82);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  height: 64px;
+}
+
+.brand {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.brand span { color: var(--accent); }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+}
+
+.nav-links a {
+  display: block;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  color: var(--text-mid);
+}
+.nav-links a:hover { background: var(--panel-2); color: var(--text); }
+
+/* The page you are on. */
+.nav-links a.active {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* Hamburger — only visible on small screens (see section 11). */
+.nav-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.nav-toggle span {
+  display: block;
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+}
+.nav-toggle span + span { margin-top: 5px; }
+
+
+/* ---------- 4. REUSABLE PIECES ------------------------- */
+
+/* Buttons ------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s, transform 0.18s;
+}
+.btn:hover { border-color: var(--accent); color: var(--text); }
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #14171d;
+  font-weight: 600;
+}
+.btn-primary:hover { background: #f3c874; color: #14171d; }
+
+.btn-small { padding: 7px 13px; font-size: 0.82rem; }
+
+/* Panels / cards ----------------------------------------- */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* Status pill: a coloured dot plus a word. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 11px 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.pill.is-live  { color: var(--ok);     border-color: rgba(102, 192, 139, 0.35); }
+.pill.is-loading { color: var(--warn); border-color: rgba(230, 192, 85, 0.35); }
+.pill.is-error { color: var(--bad);    border-color: rgba(226, 121, 95, 0.35); }
+
+/* The dot pulses while data is on its way. */
+.pill.is-loading::before { animation: blink 1.1s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: 0.25; } }
+
+/* Section label: "01 — Live feeds" with a rule. */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 56px 0 20px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.section-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+.section-label .num { color: var(--accent); }
+
+/* Page header used by the four data pages. */
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 48px 0 32px;
+  border-bottom: 1px solid var(--line);
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.page-title {
+  font-size: clamp(1.9rem, 4vw, 2.7rem);
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+
+.page-sub {
+  max-width: 62ch;
+  color: var(--text-mid);
+  font-size: 0.98rem;
+}
+
+.page-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Row of big numbers. */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin-top: 28px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.stat-grid.six { grid-template-columns: repeat(6, 1fr); }
+.stat-grid.eight { grid-template-columns: repeat(8, 1fr); }
+
+.stat-cell {
+  background: var(--panel);
+  padding: 18px 20px;
+}
+.stat-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.stat-value {
+  font-family: var(--mono);
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+/* Six cells side by side have less room, so the numbers are smaller. */
+.stat-grid.six .stat-value { font-size: 1.15rem; }
+.stat-value.small { font-size: 1rem; }
+.stat-sub {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* Footer ------------------------------------------------ */
+.site-footer {
+  border-top: 1px solid var(--line);
+  background: #0A0C10;
+  padding: 44px 0 28px;
+  position: relative;
+  z-index: 1;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 40px;
+}
+.footer-title { font-size: 1rem; color: var(--text); margin-bottom: 10px; }
+.footer-title span { color: var(--accent); }
+.footer-blurb { font-size: 0.88rem; max-width: 40ch; color: var(--text-dim); }
+.footer-heading {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+.footer-list { list-style: none; font-size: 0.88rem; color: var(--text-mid); }
+.footer-list li + li { margin-top: 6px; }
+.footer-bottom {
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+
+/* ---------- 5. HOME PAGE ------------------------------- */
+.hero { padding: 72px 0 8px; }
+
+.hero-title {
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin: 14px 0 20px;
+}
+.hero-title span { color: var(--accent); }
+
+.hero-text { max-width: 60ch; font-size: 1.05rem; color: var(--text-mid); }
+
+/* UTC + local clock. */
+.clock {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  margin: 32px 0;
+  padding: 14px 18px;
+  width: fit-content;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  font-family: var(--mono);
+}
+.clock-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.clock-value { font-size: 1.05rem; color: var(--text); }
+.clock-value.local { color: var(--accent); }
+.clock-date { font-size: 0.82rem; color: var(--text-dim); }
+
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* Three feed cards. */
+.feed-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.feed-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--text-mid);
+  transition: border-color 0.2s, transform 0.2s, background 0.2s;
+}
+.feed-card:hover {
+  border-color: rgba(233, 180, 76, 0.55);
+  background: var(--panel-2);
+  transform: translateY(-2px);
+  color: var(--text-mid);
+}
+
+.feed-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.feed-no {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.feed-title { font-size: 1.12rem; }
+
+.feed-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: auto;
+}
+.feed-value {
+  font-family: var(--mono);
+  font-size: 1.45rem;
+  color: var(--text);
+  line-height: 1.2;
+}
+.feed-note { font-size: 0.8rem; color: var(--text-dim); }
+
+.feed-icon {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+  color: var(--accent);
+}
+.feed-icon svg { width: 26px; height: 26px; }
+
+/* Strongest earthquake of the day. */
+.callout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+  margin-top: 20px;
+  padding: 16px 20px;
+  border: 1px solid rgba(233, 180, 76, 0.3);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+}
+.callout-mag {
+  font-family: var(--mono);
+  font-size: 1.2rem;
+  color: var(--accent);
+}
+.callout-body { flex: 1 1 240px; }
+.callout-place { display: block; color: var(--text); font-weight: 500; }
+.callout-meta { font-size: 0.82rem; color: var(--text-dim); }
+
+/* Home page "how it works" strip. */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.step {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+.step-num {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.step h3 { font-size: 1rem; margin-bottom: 6px; }
+.step p { font-size: 0.88rem; color: var(--text-dim); }
+
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 18px;
+  font-size: 0.9rem;
+}
+
+
+/* ---------- 6. SEISMIC PAGE ---------------------------- */
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.map {
+  height: 560px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #0A0C10;
+  z-index: 0;            /* keeps the map under the sticky header */
+}
+
+/* Shown inside a map box if the map library could not load. */
+.map-fallback {
+  height: 100%;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 30px;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+/* Event log panel. */
+.log-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  max-height: 560px;
+}
+
+.log-head { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.log-head h2 {
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.chip {
+  padding: 5px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-2);
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: 0.16s;
+}
+.chip:hover { color: var(--text); border-color: var(--text-dim); }
+.chip.active {
+  background: var(--accent-soft);
+  border-color: rgba(233, 180, 76, 0.55);
+  color: var(--accent);
+}
+
+/* Scrollable list of events. */
+.log-list {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  padding: 6px;
+}
+
+.quake-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-mid);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.quake-row:hover { background: var(--panel-2); color: var(--text); }
+
+.quake-mag {
+  font-family: var(--mono);
+  font-size: 0.86rem;
+  font-weight: 500;
+  width: 44px;
+  flex: none;
+}
+.quake-place {
+  flex: 1;
+  font-size: 0.86rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.quake-age {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  flex: none;
+}
+
+.log-foot {
+  padding: 10px 16px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+
+/* Events-per-hour chart. */
+.hour-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 120px;
+  padding: 22px 20px 8px;
+}
+.hour-bar {
+  flex: 1;
+  min-height: 2px;
+  background: var(--accent);
+  border-radius: 2px 2px 0 0;
+  opacity: 0.75;
+  transition: opacity 0.15s;
+}
+.hour-bar:hover { opacity: 1; }
+.hour-axis {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px 14px;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+.note {
+  margin-top: 16px;
+  line-height: 1.9;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+
+/* ---------- 7. WEATHER PAGE ---------------------------- */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 28px;
+  padding: 16px 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.city-field { display: flex; align-items: center; gap: 12px; }
+
+input[type="search"] {
+  width: 260px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.92rem;
+}
+input[type="search"]::placeholder { color: var(--text-dim); }
+input[type="search"]:focus { outline: none; border-color: var(--accent); }
+
+.toolbar-actions { display: flex; align-items: center; gap: 12px; }
+
+.weather-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* Both panels stretch to the same height; the current-conditions
+   block takes the spare room so nothing looks half-empty. */
+.weather-grid > .panel { display: flex; flex-direction: column; }
+
+/* Big current-conditions block. */
+.current {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 26px 22px;
+}
+.current-icon {
+  width: 92px;
+  height: 92px;
+  flex: none;
+  color: var(--accent);
+}
+.current-temp {
+  font-family: var(--mono);
+  font-size: 3rem;
+  color: var(--text);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.current-temp span { font-size: 1.4rem; color: var(--text-dim); }
+.current-desc { color: var(--text); font-size: 1.02rem; margin-top: 8px; }
+.current-feels { font-family: var(--mono); font-size: 0.82rem; color: var(--text-dim); }
+.current-place {
+  margin-left: auto;
+  text-align: right;
+  font-size: 0.86rem;
+  color: var(--text-dim);
+}
+.current-place b { display: block; color: var(--text); font-weight: 500; font-size: 0.98rem; }
+
+/* Sunrise / sunset strip. */
+.sun-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  padding: 14px 22px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 0.84rem;
+  color: var(--text-dim);
+}
+.sun-strip b { color: var(--text); font-weight: 500; }
+
+/* Air-quality panel. */
+.aqi-main { padding: 24px 22px 18px; }
+.aqi-value {
+  font-family: var(--mono);
+  font-size: 2.8rem;
+  line-height: 1;
+  color: var(--text);
+}
+.aqi-category { margin-top: 8px; font-size: 1rem; }
+.aqi-advice { margin-top: 10px; font-size: 0.86rem; color: var(--text-dim); }
+
+/* 0–500 EPA scale with a marker on today's reading. */
+.aqi-scale {
+  position: relative;
+  height: 10px;
+  margin: 20px 22px 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    #4CAF7D 0%, #E6C055 25%, #E58E52 45%, #D3574E 65%, #9B4A7A 100%);
+}
+.aqi-marker {
+  position: absolute;
+  top: -4px;
+  width: 4px;
+  height: 18px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--text);
+  box-shadow: 0 0 0 2px var(--panel);
+}
+.aqi-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 22px 20px;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--text-dim);
+}
+
+/* Pollutant bars — six small rows in three columns. */
+.pollutants {
+  padding: 20px 22px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px 30px;
+}
+.pollutant {
+  display: grid;
+  grid-template-columns: 70px 1fr 62px;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+}
+.pollutant-name { color: var(--text-dim); font-family: var(--mono); }
+.pollutant-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  overflow: hidden;
+}
+.pollutant-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  opacity: 0.8;
+}
+.pollutant-value {
+  text-align: right;
+  font-family: var(--mono);
+  color: var(--text);
+}
+
+/* 24-hour temperature chart. */
+.temp-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 190px;
+  padding: 26px 22px 0;
+}
+.temp-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+}
+.temp-bar {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(180deg, var(--accent), rgba(233, 180, 76, 0.15));
+  min-height: 3px;
+}
+.temp-bar.night {
+  background: linear-gradient(180deg, var(--rain), rgba(127, 179, 213, 0.15));
+}
+.temp-hour {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  color: var(--text-dim);
+  height: 14px;
+  white-space: nowrap;
+}
+.temp-axis {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 22px 16px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+/* Seven-day outlook. */
+.daily-strip {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--line);
+}
+.day-card {
+  background: var(--panel);
+  padding: 16px 10px;
+  text-align: center;
+}
+.day-name {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+.day-icon {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 10px;
+  color: var(--accent);
+}
+.day-max { font-family: var(--mono); color: var(--text); font-size: 0.95rem; }
+.day-min { font-family: var(--mono); color: var(--text-dim); font-size: 0.8rem; }
+
+/* Error banner. */
+.banner {
+  margin-top: 20px;
+  padding: 13px 18px;
+  border: 1px solid rgba(226, 121, 95, 0.4);
+  border-left: 3px solid var(--bad);
+  border-radius: var(--radius-sm);
+  background: rgba(226, 121, 95, 0.08);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+
+/* ---------- 8. ORBITAL PAGE ---------------------------- */
+.map.tall { height: 520px; margin-top: 24px; }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 20px;
+  padding: 16px 20px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.toggle { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
+.toggle input { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; }
+
+/* The ISS marker on the map. */
+.iss-marker {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid #14171d;
+  box-shadow: 0 0 0 4px rgba(233, 180, 76, 0.4), 0 2px 10px rgba(0, 0, 0, 0.7);
+}
+.iss-marker::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  animation: ping 2.4s ease-out infinite;
+}
+@keyframes ping {
+  0%   { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+
+/* ---------- 9. ABOUT PAGE ------------------------------ */
+.prose { max-width: 68ch; font-size: 1rem; }
+.prose p + p { margin-top: 16px; }
+.prose h3 { margin: 0 0 8px; font-size: 1.05rem; }
+
+.lede {
+  font-size: 1.15rem;
+  color: var(--text);
+  max-width: 62ch;
+  margin-top: 12px;
+}
+
+.cards-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.cards-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.card {
+  padding: 20px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.card h3 { font-size: 1rem; margin-bottom: 8px; }
+.card p { font-size: 0.9rem; color: var(--text-dim); }
+.card .mono { font-size: 0.8rem; color: var(--accent); }
+
+/* Simple data table. */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.table th, .table td {
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.table th {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+.table td:first-child { font-family: var(--mono); color: var(--text); white-space: nowrap; }
+.table tr:last-child td { border-bottom: 0; }
+
+/* Code sample blocks. */
+.code-block {
+  background: #0A0C10;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.7;
+  color: var(--text-mid);
+}
+.code-block .c { color: #6B7280; }   /* comment */
+.code-block .k { color: #C792EA; }   /* keyword */
+.code-block .s { color: #9CDcfe; }   /* string  */
+
+/* Question / answer list for the class presentation. */
+.faq { display: grid; gap: 12px; }
+.faq details {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+}
+.faq summary {
+  cursor: pointer;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 500;
+  list-style: none;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::before { content: "+ "; color: var(--accent); font-family: var(--mono); }
+.faq details[open] summary::before { content: "– "; }
+.faq p { margin-top: 10px; font-size: 0.9rem; color: var(--text-mid); }
+
+
+/* ---------- 10. LEAFLET MAP OVERRIDES ------------------ */
+/* Leaflet always draws a white box; these rules make its
+   controls and pop-ups match the dark theme. */
+.leaflet-container {
+  background: #0A0C10;
+  font-family: var(--font);
+  font-size: 0.85rem;
+}
+
+/* The satellite imagery is bright; dimming it a little keeps the
+   orange markers and the white place names easy to read, and lets
+   the map sit inside the dark page instead of shouting. */
+.leaflet-tile-pane {
+  filter: brightness(0.82) saturate(0.92);
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--panel);
+  color: var(--text-mid);
+  border: 1px solid var(--line);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+.leaflet-popup-content { margin: 14px 16px; }
+.popup-title {
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+.popup-place { color: var(--text); margin-bottom: 8px; }
+.popup-line {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+.popup-line b { color: var(--text-mid); font-weight: 500; }
+.leaflet-popup-close-button { color: var(--text-dim) !important; }
+.leaflet-control-zoom a {
+  background: var(--panel) !important;
+  color: var(--text) !important;
+  border-color: var(--line) !important;
+}
+.leaflet-control-attribution {
+  background: rgba(10, 12, 16, 0.82) !important;
+  color: var(--text-dim) !important;
+}
+.leaflet-control-attribution a { color: var(--text-mid) !important; }
+
+
+/* ---------- 11. SMALL SCREENS -------------------------- */
+@media (max-width: 900px) {
+  .feed-grid, .steps, .cards-3 { grid-template-columns: 1fr; }
+  .cards-2 { grid-template-columns: 1fr; }
+  .split, .weather-grid { grid-template-columns: 1fr; }
+  .stat-grid, .stat-grid.six, .stat-grid.eight { grid-template-columns: repeat(2, 1fr); }
+  .stat-grid.eight .stat-value { font-size: 1.1rem; }
+  .daily-strip { grid-template-columns: repeat(4, 1fr); }
+  .pollutants { grid-template-columns: repeat(2, 1fr); }
+  .log-panel { max-height: 460px; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 720px) {
+  .container { padding: 0 16px; }
+
+  /* The nav becomes a drop-down panel behind the hamburger. */
+  .nav-toggle { display: block; }
+  .nav-links {
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    padding: 10px 16px 16px;
+    background: #0E1116;
+    border-bottom: 1px solid var(--line);
+    display: none;
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a { padding: 12px; }
+
+  .hero { padding: 44px 0 0; }
+  .page-head { padding: 32px 0 24px; }
+  .clock { width: 100%; }
+  .map, .map.tall { height: 380px; }
+  .current { flex-wrap: wrap; }
+  .current-place { margin-left: 0; text-align: left; flex-basis: 100%; }
+  .temp-chart { height: 150px; gap: 2px; }
+  .daily-strip { grid-template-columns: repeat(2, 1fr); }
+  .pollutants { grid-template-columns: 1fr; }
+  .stat-value { font-size: 1.25rem; }
+  .city-field { width: 100%; }
+  input[type="search"] { width: 100%; }
+  .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+}
+
+/* Respect visitors who prefer less movement. */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
